@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+    
+<sqlMap>
+	<typeAlias alias="court" type="com.soft.ol.dto.Court" />
+	<!--<typeAlias alias="courtDoc" type="com.soft.ol.dto.CourtDoc" />
+	 <typeAlias alias="lawsuit" type="com.soft.ol.dto.Lawsuit" />-->
+	<typeAlias alias="execute" type="com.soft.ol.dto.ExcuteForZj" />
+
+    <insert id="insertCourt" parameterClass="court">
+    <![CDATA[	 	
+			insert into res_court (t_date,res_date,justice,court,start_date,plan_date,case_no,case_res,dept,judge,plaintiff,defandant,updateFlag) 
+			values(now(),#dataFrom#,#strCourt#,#strTribunal#,#openDate#,#arrDate#,#caseId#,#caseContent#,#caseDept#,#judge#,#plaintiff#,#defendant#,0)
+			ON DUPLICATE KEY UPDATE t_date = values(t_date),court = values(court), start_date = values(start_date), judge= values(judge),plaintiff= values(plaintiff),
+			                      defandant = values(defandant),updateFlag =(1)
+		]]>
+	</insert>
+	
+	<!--<insert id="insertCourtDoc" parameterClass="courtDoc">
+    <![CDATA[	 	
+			insert into corp_charge (t_date,data_res,court,title,cause_no,close_date,charge,doc_id,province) 
+			select now(),#dataFrom#,#strCourt#,#strTitle#,#caseNo#,#depolyTime#,#strContent#,#docId#,#province#
+			from dual
+			where not exists(select 1 from corp_charge  t2 where t2.doc_id =#docId#)			
+		]]>
+	</insert>-->
+
+	
+   <!-- <insert id="insertLawsuit" parameterClass="lawsuit">
+    <![CDATA[	 	
+			insert into corp_lawsuit (t_date,data_res,court,case_id,lawsuit_date,status,participants,updateFlag) 
+			values(now(),#dataFrom#,#strCourt#,#caseId#,#excuteDate#,#caseStatus#,#ExecutedDSR#,0)
+			ON DUPLICATE KEY UPDATE t_date = values(t_date),participants= values(participants),status=values(status),updateFlag =(1)
+		]]>
+	</insert>--> 
+	
+	    <insert id="insertExecute" parameterClass="execute">
+    <![CDATA[	 	
+			insert into execute_zj (t_date,data_res,court,case_id,cause_create_date,status,execteDRS,exectedDRS,updateFlag) 
+			values(now(),#dataFrom#,#strCourt#,#caseId#,#excuteDate#,#caseStatus#,#ExecuteDSR#,#ExecutedDSR#,0)
+			ON DUPLICATE KEY UPDATE t_date = values(t_date),execteDRS= values(execteDRS),exectedDRS= values(exectedDRS),status=values(status),updateFlag =(1)
+		]]>
+	</insert>
+	
+	    <!--浙江 上海高法院-->  
+    <parameterMap id="ParameterMap" class="map">  
+       <parameter property="court" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+       <parameter property="tribunal" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+       <parameter property="openDate" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>  
+       <parameter property="planDate" jdbcType="varchar" javaType="java.lang.String" mode="IN"/> 
+       <parameter property="caseId" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>  
+       <parameter property="caseContent" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>  
+       <parameter property="department" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+       <parameter property="judge" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+       <parameter property="plaintiff" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+       <parameter property="defendant" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+       <parameter property="province" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+       <parameter property="retunCode" jdbcType="int"   javaType="java.lang.Integer" mode="OUT"/>
+    </parameterMap>  
+    <procedure id="call_court_online" parameterMap="ParameterMap">  
+        {call sp_insert_court_online(?,?,?,?,?,?,?,?,?,?,?,?)}
+    </procedure>  
+    
+    <!--商标--> 
+    <parameterMap id="brandMap" class="map">  
+       <parameter property="resData" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+       <parameter property="registerNum" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+       <parameter property="applicationName" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>  
+       <parameter property="type" jdbcType="varchar" javaType="java.lang.String" mode="IN"/> 
+       <parameter property="applicationDate" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>  
+       <parameter property="brandName" jdbcType="varchar" javaType="java.lang.String" mode="IN"/> 
+       <parameter property="retunCode" jdbcType="int"   javaType="java.lang.Integer" mode="OUT"/>
+       
+    </parameterMap>  
+    <procedure id="call_brand_online" parameterMap="brandMap">  
+        {call sp_insert_corp_brand_online(?,?,?,?,?,?,?)}
+    </procedure> 
+	
+</sqlMap>

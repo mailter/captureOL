@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xmlns:aop="http://www.springframework.org/schema/aop" 
+xmlns:tx="http://www.springframework.org/schema/tx" 
+xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                    http://www.springframework.org/schema/beans/spring-beans.xsd 
+                    http://www.springframework.org/schema/tx 
+                    http://www.springframework.org/schema/tx/spring-tx.xsd 
+                    http://www.springframework.org/schema/aop 
+                    http://www.springframework.org/schema/aop/spring-aop.xsd" default-autowire="byName">
+               
+   <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
+		<property name="ignoreResourceNotFound" value="true"/>
+		<property name="locations">
+			<list>
+				<value>classpath*:/application.properties</value>
+			</list>
+		</property>
+	</bean>
+	<!-- 配置数据源 连接池 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driver}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<!--  pool  -->
+		<property name="initialSize" value="${pool.initialSize}"/>
+		<property name="maxActive" value="${pool.maxActive}"/>
+		<property name="maxIdle" value="${pool.maxIdle}"/>
+		<property name="maxWait" value="${pool.maxWait}"/>
+		<property name="minIdle" value="${pool.minIdle}"/>
+		<property name="defaultAutoCommit" value="${pool.defaultAutoCommit}"/>
+	</bean>
+	<!-- spring 的事务处理类配置 -->
+	<bean id="transactionManager" 
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+	</bean>
+	<!-- spring的ibatis 配制 -->
+	<bean id="sqlMapClient"
+		class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+		<property name="configLocation" value="WEB-INF/classes/sqlMapConfig.xml" />
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	
+		<!--配置哪些类的方法需要进行事务管理 -->
+
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+           <tx:method name="insert*" propagation="REQUIRED"/>
+           <tx:method name="select*" propagation="REQUIRED"/>
+           <tx:method name="delete*" propagation="REQUIRED"/>
+           <tx:method name="update*" propagation="REQUIRED"/>
+           <tx:method name="query*" read-only="true"/>
+       </tx:attributes>
+    </tx:advice>
+    
+    <aop:config>
+		<aop:pointcut id="allManagerMethod" expression="execution(* com.soft.ol.service.*.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="allManagerMethod"/>
+	</aop:config>
+</beans>
+
+
+

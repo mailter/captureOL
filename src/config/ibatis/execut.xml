@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+    
+<sqlMap>
+	<typeAlias alias="excutecase" type="com.soft.ol.dto.ExcuteCase" />
+	
+	<resultMap id="exec-result" class="com.soft.ol.dto.ExcuteCase">
+		<result property="spideId" column="spideid" />
+		<result property="attentionNum" column="attention_num" />
+	</resultMap>
+	
+    <insert id="insertExec" parameterClass="excutecase">
+    <![CDATA[	 	
+			insert ignore into court_exec(t_date,name,id,execute_court,cause_create_date,execute_code,exec_money,spideid,attention_num,type_flag) 
+											values(now(),#pname#,#partyCardNum#,#execCourtName#,#caseCreateTime#,#caseCode#,
+											#execMoney#,#spideId#,#attentionNum#,#type#)
+		]]>
+	</insert>
+	
+	<select id="queryExecList"  resultMap="exec-result" >
+	<![CDATA[
+			select t.spideid,t.attention_num from court_exec t 
+			where t.attention_num <>0
+
+		]]>
+	</select>
+	
+	<update id="updateExecutCourt"  parameterClass="excutecase" >
+	<![CDATA[
+		update court_exec set name=#pname#,id=#partyCardNum#,execute_court=#execCourtName#,
+							  cause_create_date=#caseCreateTime#,execute_code=#caseCode#,
+							  exec_money=#execMoney#,attention_num=#attentionNum#,type_flag=#type#
+							  where spideid=#updateId#
+	]]>
+	</update>
+	
+	<delete id="deleteExecByid"  parameterClass="String" >
+   	<![CDATA[
+   		delete from court_exec where spideid=#spideId#
+   	]]>
+    </delete>  
+    
+    <!--执行-->  
+    <parameterMap id="ParameterMap" class="map">  
+       <parameter property="pname" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+       <parameter property="pcard_id" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+       <parameter property="pcourt" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>  
+       <parameter property="preg_date" jdbcType="varchar" javaType="java.lang.String" mode="IN"/> 
+       <parameter property="pcase_no" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>  
+       <parameter property="pexec_money" jdbcType="varchar" javaType="java.lang.String" mode="IN"/> 
+       <parameter property="ptype" jdbcType="int" javaType="java.lang.Integer" mode="IN"/>
+       <parameter property="retunCode" jdbcType="int" javaType="java.lang.Integer" mode="OUT"/>
+    </parameterMap>  
+    <procedure id="call_exec_online" parameterMap="ParameterMap">  
+        {call sp_insert_exec_online(?,?,?,?,?,?,?,?)}
+    </procedure>  
+	
+</sqlMap>

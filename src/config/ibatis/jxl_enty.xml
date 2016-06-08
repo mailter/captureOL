@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap> 
+	<insert id="insertAppCheck" parameterClass="com.soft.jxl.bean.AppCheck">
+	 	<![CDATA[   
+           insert into m_interface_uinfo(
+           		mobile,
+           		id_card,
+           		name,
+           		is_bind_oper,
+           		is_bind_ec,
+           		is_bind_tripweb,
+           		is_bind_xxweb,
+           		is_bind_pf,
+           		is_bind_numinfo,
+           		idcard_is_vaild,
+           		name_ismatch_oper,
+           		idcard_ismatch_oper,
+           		name_ismatch_xxweb,
+           		idccard_ismatch_xxweb,
+           		name_ismatch_pf,
+           		idcard_ismatch_pf,
+           		blist_of_court,
+           		blist_of_bank,
+           		mobilblist_of_bank,
+           		circle_of_fs,
+           		macau_call_info,
+           		call_police_info,
+           		call_lawyer_info,
+           		call_court_info,
+           		phone_used_date,
+           		buy_lottery_info,
+           		address,
+           		work_address,
+           		nocturnal_info,
+           		loan_number_contact,
+           		create_date,
+           		json_str
+           )values(
+           		#mobile#,
+           		#idCard#,
+           		#name#,
+           		#isBindOper#,
+           		#isBindEc#,
+           		#isBindTripweb#,
+           		#isBindXxweb#,
+           		#isBindPf#,
+           		#isBindNuminfo#,
+           		#idcardIsVaild#,
+           		#nameIsmatchOper#,
+           		#idcardIsmatchOper#,
+           		#nameIsmatchXxweb#,
+           		#idccardIsmatchXxweb#,
+           		#nameIsmatchPf#,
+           		#idcardIsmatchPf#,
+           		#blistOfCourt#,
+           		#blistOfBank#,
+           		#mobilblistOfBank#,
+           		#circleOfFs#,
+           		#macauCallInfo#,
+           		#callPoliceInfo#,
+           		#callLawyerInfo#,
+           		#callCourtInfo#,
+           		#phoneUedDate#,
+           		#buyLotteryInfo#,
+           		#address#,
+           		#workAddress#,
+           		#nocturnalInfo#,
+           		#loanNumberContact#,
+           		#createDate#,
+           		#json#
+           )
+       ]]>  
+ 
+		<selectKey resultClass="int" keyProperty="id" >
+  			SELECT @@IDENTITY AS id
+   		</selectKey>
+   	 
+	</insert>
+	
+	<insert id="insertCallInfo" parameterClass="java.util.ArrayList">
+		 <![CDATA[  
+			insert into m_interface_callinfo(
+				uinfo_id,
+				phone_num,
+				phone_num_loc,
+				contact_name,
+				needs_type,
+				call_cnt,
+				call_len,
+				call_out_cnt,
+				call_out_len,
+				call_in_cnt,
+				call_in_len,
+				contact_1w,
+				contact_1m,
+				contact_3m,
+				contact_3m_plus,
+				contact_early_morning,
+				contact_morning,
+				contact_noon,
+				contact_afternoon,
+				contact_night,
+				contact_all_day,
+				contact_weekday,
+				contact_weekend,
+				contact_holiday
+			)		
+			 values
+		]]>
+		<iterate  conjunction ="," >   
+			<![CDATA[ 
+			( 
+				#contactList[].uinfo_id#,
+				#contactList[].phone_num#,
+				#contactList[].phone_num_loc#,
+				#contactList[].contact_name#,
+				#contactList[].needs_type#,
+				#contactList[].call_cnt#,
+				#contactList[].call_len#,
+				#contactList[].call_out_cnt#,
+				#contactList[].call_out_len#,
+				#contactList[].call_in_cnt#,
+				#contactList[].call_in_len#,
+				#contactList[].contact_1w#,
+				#contactList[].contact_1m#,
+				#contactList[].contact_3m#,
+				#contactList[].contact_3m_plus#,
+				#contactList[].contact_early_morning#,
+				#contactList[].contact_morning#,
+				#contactList[].contact_noon#,
+				#contactList[].contact_afternoon#,
+				#contactList[].contact_night#,
+				#contactList[].contact_all_day#,
+				#contactList[].contact_weekday#,
+				#contactList[].contact_weekend#,
+				#contactList[].contact_holiday#
+				)
+			]]>
+			</iterate>
+	</insert>
+</sqlMap>

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+    
+<sqlMap>
+	<typeAlias alias="blacklist" type="com.soft.ol.dto.Black" />
+	<typeAlias alias="poxyObj" type="com.soft.ol.dto.Proxy" />
+	
+	<typeAlias alias="CustomerObj" type="com.soft.ol.dto.Customer" />
+	
+	<resultMap id="black-result" class="com.soft.ol.dto.Black">
+		<result property="spideId" column="spideId" />
+		<result property="attentionNum" column="attention_num" />
+	</resultMap>
+	
+	<resultMap id="customer-result" class="com.soft.ol.dto.Customer">
+		<result property="customerId" column="CustomerID" />
+		<result property="customerName" column="Name" />
+		<result property="customerCerCode" column="CertificateCode" />
+		<!--<result property="customerStatus" column="CustomerStatus" />
+		<result property="authenticateStatus" column="AuthenticateStatus" />-->
+	</resultMap>
+
+	<resultMap id="proxy-result" class="com.soft.ol.dto.Proxy">
+		<result property="id" column="id"/>
+		<result property="ip" column="ip"/>
+		<result property="port" column="port"/>
+		<result property="flag" column="flag"/>
+	</resultMap>
+	
+    <insert id="insertCorpBlack" parameterClass="blacklist">
+    <![CDATA[	 	
+			insert  into corp_black (corp_name,org_id,artificial_person,court,execute_base,cause_create_date,execute_code,
+											execute_base_corp,duty,performance,behavier,pub_time,attention_num,spideId,vaild_flag) 
+											values(#name#,#cardNum#,#artificialPerson#,#court#,#executeBase#,#causeCreateDate#,#executeCode#,
+											#executeCorp#,#duty#,#performance#,#behavier#,#pubTime#,#attentionNum#,#spideId#,#vaild#)
+									ON DUPLICATE KEY UPDATE corp_name= values(corp_name),org_id= values(org_id),artificial_person = values(artificial_person),court = values(court),
+									execute_base= values(execute_base),cause_create_date= values(cause_create_date),execute_code = values(execute_code),execute_base_corp = values(execute_base_corp),
+									duty= values(duty),performance= values(performance),behavier = values(behavier),pub_time = values(pub_time),spideId = values(spideId),vaild_flag = values(vaild_flag)
+		]]>
+	</insert>
+	
+	 <insert id="insertPersonBlack" parameterClass="blacklist">
+    <![CDATA[	 	
+			insert  into personal_black (name,ID,province,Sex,age,court,execute_base,cause_create_date,execute_code,
+											execute_base_corp,duty,performance,behavier,pub_time,attention_num,spideId,vaild_flag) 
+											values(#name#,#cardNum#,#province#,#sex#,#age#,#court#,#executeBase#,#causeCreateDate#,#executeCode#,
+											#executeCorp#,#duty#,#performance#,#behavier#,#pubTime#,#attentionNum#,#spideId#,#vaild#)
+									ON DUPLICATE KEY UPDATE name= values(name),ID= values(ID),province = values(province),Sex = values(Sex),age = values(age),court = values(court),
+									execute_base= values(execute_base),cause_create_date= values(cause_create_date),execute_code = values(execute_code),execute_base_corp = values(execute_base_corp),
+									duty= values(duty),performance= values(performance),behavier = values(behavier),pub_time = values(pub_time),spideId = values(spideId),vaild_flag = values(vaild_flag)
+		]]>
+	</insert>
+	
+	<select id="queryProxyList"  resultMap="proxy-result" >
+	<![CDATA[
+		select t.id, t.ip,t.port,t.flag from proxy t 
+		where t.flag=0
+	]]>
+	</select>
+	
+	<update id="updateProxyForshixin"  parameterClass="poxyObj" >
+	<![CDATA[
+		update proxy set flag=1 where id=#id#
+	]]>
+	</update>
+	
+	<update id="updateblackListForcorp"  parameterClass="blacklist" >
+	<![CDATA[
+		update corp_black set corp_name=#name# ,org_id=#cardNum#,artificial_person=#artificialPerson#,
+							  court=#court#,execute_base=#executeBase#,cause_create_date=#causeCreateDate#,
+							  execute_code=#executeCode#,execute_base_corp=#executeCorp#,duty=#duty#,performance=#performance#,
+							  behavier=#behavier#,pub_time=#pubTime#,attention_num=#attentionNum# ,vaild_flag=#vaild#
+							  where  spideId=#updateId#
+	]]>
+	</update>
+	
+	<update id="updateblackListForPerson"  parameterClass="blacklist" >
+	<![CDATA[
+		update personal_black set name=#name#,ID=#cardNum#,province=#province#,Sex=#sex#,age=#age#,
+							  court=#court#,execute_base=#executeBase#,cause_create_date=#causeCreateDate#,
+							  execute_code=#executeCode#,execute_base_corp=#executeCorp#,duty=#duty#,performance=#performance#,
+							  behavier=#behavier#,pub_time=#pubTime#,attention_num=#attentionNum#,spideId=#spideId# ,vaild_flag=#vaild#
+							  where spideId=#updateId#
+	]]>
+	</update>
+	<!--
+	<delete id="deleteBlackByid"  parameterClass="String" >
+   <![CDATA[
+   		delete from personal_black where spideId=#spideId#
+   ]]>
+    </delete> 
+   
+   
+    <select id="queryCustomer"  resultMap="customer-result" >
+	<![CDATA[
+			select c.Name,ce.CertificateCode,c.CustomerID
+			from m_customer c, m_customer_certificate ce
+			where c.CustomerID = ce.CustomerID
+			and c.CustomerStatus ='SHIXIN'
+	]]>
+	</select> -->
+	
+	<update id="updateForCustomer"  parameterClass="CustomerObj" >
+	<![CDATA[
+		update m_customer set  CustomerStatus =#customerStatus# 
+		where CustomerID = #customerId#
+	]]>
+	</update>
+	
+	<update id="updateForAuthenticate"  parameterClass="CustomerObj" >
+	<![CDATA[
+		update m_customer_authenticate set AuthenticateStatus =#authenticateStatus# 
+		where CustomerID = #customerId#
+	]]>
+	</update>
+	
+	
+    <!--失信 
+    <parameterMap id="ParameterMap" class="map">  
+       <parameter property="pcorp_name" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+       <parameter property="porg_id" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+       <parameter property="partificial_person" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>  
+       <parameter property="pcourt" jdbcType="varchar" javaType="java.lang.String" mode="IN"/> 
+       <parameter property="pexecute_base" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+       <parameter property="pcause_create_date" jdbcType="varchar" javaType="java.lang.String" mode="IN"/> 
+       <parameter property="pexecute_code" jdbcType="varchar" javaType="java.lang.String" mode="IN"/> 
+       <parameter property="pexecute_base_corp" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+       <parameter property="pduty" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+	   <parameter property="pperformance" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+	   <parameter property="pbehavier" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+	   <parameter property="ppub_time" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+	   <parameter property="pdata_cause" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+	   <parameter property="ptype" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+	   <parameter property="pprovince" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+	   <parameter property="psex" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+	   <parameter property="page" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+	   <parameter property="pperformedPart" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+	   <parameter property="punperformPart" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+	   <parameter property="retunCode" jdbcType="int" javaType="java.lang.Integer" mode="OUT"/>
+    </parameterMap>  
+    <procedure id="call_black_online" parameterMap="ParameterMap">  
+        {call sp_insert_black_online(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}
+    </procedure>  
+     --> 
+	
+</sqlMap>

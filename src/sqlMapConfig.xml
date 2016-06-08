@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMapConfig PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+
+<sqlMapConfig>
+		<settings
+			enhancementEnabled="true"
+			lazyLoadingEnabled="true"
+			useStatementNamespaces="false" />
+        <sqlMap resource="/config/ibatis/court.xml"/>
+        <sqlMap resource="/config/ibatis/execut.xml"/>
+        <sqlMap resource="/config/ibatis/black.xml"/>
+        <sqlMap resource="/config/ibatis/authenticate.xml"/>
+        <sqlMap resource="/config/ibatis/qh_enty.xml"/>
+        <sqlMap resource="/config/ibatis/jxl_enty.xml"/>
+
+</sqlMapConfig>

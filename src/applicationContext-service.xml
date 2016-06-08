@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xmlns:aop="http://www.springframework.org/schema/aop" 
+xmlns:tx="http://www.springframework.org/schema/tx" 
+xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                    http://www.springframework.org/schema/beans/spring-beans.xsd 
+                    http://www.springframework.org/schema/tx 
+                    http://www.springframework.org/schema/tx/spring-tx.xsd 
+                    http://www.springframework.org/schema/aop 
+                    http://www.springframework.org/schema/aop/spring-aop.xsd" default-autowire="byName">
+
+	<!-- 实体HTTP类  -->
+	<bean id="Httpclient" class="com.soft.ol.impl.HttpClientImp"/>
+	
+	<!-- 实体DAO类  -->
+	<bean id="CourtDao" class="com.soft.ol.dao.impl.CoutrDaoImpl">
+		<property name="sqlMapClient">
+			<ref bean="sqlMapClient" />
+		</property>
+	</bean>
+	
+	<bean id="ExecDaoHandl" class="com.soft.ol.dao.impl.ExecutDaoImpl">
+		<property name="sqlMapClient">
+			<ref bean="sqlMapClient" />
+		</property>
+	</bean>
+	
+	<bean id="BlackDaoHandl" class="com.soft.ol.dao.impl.BlackListDaoImpl">
+		<property name="sqlMapClient">
+			<ref bean="sqlMapClient" />
+		</property>
+	</bean>
+	
+	<bean id="authenDaoHandl" class="com.soft.ol.dao.impl.AuthenticateDaoImpl">
+		<property name="sqlMapClient">
+			<ref bean="sqlMapClient" />
+		</property>
+	</bean>
+	
+	<bean id="qhEntityDao" class="com.soft.ol.dao.impl.QhEntityDaoImp">
+		<property name="sqlMapClient">
+			<ref bean="sqlMapClient" />
+		</property>
+	</bean>
+	
+	<bean id="jxlEntityDao" class="com.soft.ol.dao.impl.JxlEntityDaoImp">
+		<property name="sqlMapClient">
+			<ref bean="sqlMapClient" />
+		</property>
+	</bean>
+	<!-- 实体Service类  -->
+	<bean id="CourtService" class="com.soft.ol.service.CourtDate">
+		<property name="courtDaoHandl">
+			<ref bean="CourtDao"/>
+		</property>
+	</bean>
+	
+	<bean id="qhEntityService" class="com.soft.ol.service.QhEntityService">
+		<property name="qhEntityDao">
+			<ref bean="qhEntityDao"/>
+		</property>
+	</bean>
+	
+	<bean id="ShixinOlService" class="com.soft.ol.service.ShixinOl">
+		<property name="httpclientHandl">
+			<ref bean="Httpclient"/>
+		</property>
+		<property name="blackDaoHandl">
+			<ref bean="BlackDaoHandl"/>
+		</property>
+	</bean>
+
+	<bean id="ZhixinOlService" class="com.soft.ol.service.ZhixinOl">
+		<property name="httpclientHandl">
+			<ref bean="Httpclient"/>
+		</property>
+		<property name="execDaoHandl">
+			<ref bean="ExecDaoHandl"/>
+		</property>
+	</bean>
+
+
+	
+	<bean id="authenticService" class="com.soft.ol.service.AuthenticateService">
+		<property name="shixinService">
+			<ref bean="ShixinOlService"/>
+		</property>
+		<property name="zhixinService">
+			<ref bean="ZhixinOlService"/>
+		</property>
+		<property name="autheticDaoHandl">
+			<ref bean="authenDaoHandl"/>
+		</property>
+		<!--评分基数-->
+		<property name="credooScore" value="550"/>
+		<property name="rskScore" value="60"/>
+	</bean>
+	
+	<bean id="jxlEntityService" class="com.soft.ol.service.JxlEntityService">
+		<property name="jxlEntityDao">
+			<ref bean="jxlEntityDao"/>
+		</property>
+	</bean>
+	
+	<!-- action类 -->
+	<bean id="CompanyAction" class="com.soft.ol.action.CompanyAction" >
+<!--
+		<property name="shixinService">
+			<ref bean="ShixinOlService"/>
+		</property>
+		<property name="zhixinService">
+			<ref bean="ZhixinOlService"/>
+		</property>
+	-->	
+		<property name="jxlService">
+			<ref bean="jlxServiceImp"/>
+		</property>
+
+		<property name="qhService">
+			<ref bean="qhService"/>
+		</property>
+		
+		<property name="authenticService">
+			<ref bean="authenticService"/>
+		</property>
+
+	</bean>
+	
+	<!-- 前海接口 -->
+	<bean id="qhUserInfo" class="com.soft.qh.bean.UserInfo">
+		<property name="orgCode" value="10000000"/>
+		<property name="userName" value="V_PA025_QHCS_DCS" />
+		<property name="authCode"  value="CRT001A2"/>
+		<property name="userPassword" value="weblogic1"/>
+	</bean>
+	
+	<bean id="clientConn" class="com.soft.http.HttpConnect" />
+	
+	<bean id="qhService" class="com.soft.qh.service.QhService">
+		<property name="httpConnect">
+			<ref bean="clientConn"/>
+		</property>
+		
+		<property name="userInfo">
+			<ref bean="qhUserInfo"/>
+		</property>
+		
+		<property name="qhEntityService">
+			<ref bean="qhEntityService"/>
+		</property>
+		
+		<property name="serviceHost" value="https://test-qhzx.pingan.com.cn:5443/"/>
+		<property name="keyStr" value="SK803@!QLF-D25WEDA5E52DA"/>
+		<property name="transformation" value="DESede/ECB/PKCS5Padding"/>
+		<property name="keyStorePath" value="C:\certificate\credoo_stg.jks"/>
+		<property name="certificatePath" value="C:\certificate\credoo_stg.cer"/>
+		<property name="alias" value="signKey"/>
+		<property name="password" value="qhzx_stg"/>
+		<property name="algorithm" value="SHA1WithRSA"/>
+	</bean>
+	
+	<bean id="jlxServiceImp" class="com.soft.jxl.service.JlxServiceImp">
+		<property name="orgName"  value="pinxing"/>
+		<property name="clientSecret"  value="76f5a521f5104983b5c9b21a57abfdae"/>
+		<property name="hours"  value="1"/>
+		<property name="jlxInterfaceUri"  value="https://www.juxinli.com/"/>
+		<property name="httpConnect">
+			<ref bean="clientConn"/>
+		</property>
+		
+		<property name="jxlEntityService">
+			<ref bean="jxlEntityService"/>
+		</property>
+	</bean>
+	
+</beans>

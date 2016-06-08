@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+    
+<sqlMap>
+
+	<typeAlias alias="CustomerObj" type="com.soft.ol.dto.Customer" />
+	
+	<resultMap id="customer-result" class="com.soft.ol.dto.Customer">
+		<result property="customerId" column="CustomerID" />
+		<result property="customerName" column="Name" />
+		<result property="customerCerCode" column="CertificateCode" />
+		<result property="mobileNo" column="CellPhone" />
+		<result property="customerStatus" column="CustomerStatus" />
+	</resultMap>
+
+   
+    <select id="queryCustomer"  resultMap="customer-result" >
+	<![CDATA[
+			select c.Name,ce.CertificateCode,c.CustomerID,c.CellPhone,c.CustomerStatus
+			from m_customer c, m_customer_certificate ce
+			where c.CustomerID = ce.CustomerID
+			and ce.CertificateType="ID"
+			and c.CustomerStatus ='PENDINZX'
+	]]>
+	</select>
+	 <!--
+	<update id="updateForCustomer"  parameterClass="CustomerObj" >
+	<![CDATA[
+		update m_customer set  CustomerStatus =#customerStatus# 
+		where CustomerID = #customerId#
+	]]>
+	</update>
+	
+	<update id="updateForAuthenticate"  parameterClass="CustomerObj" >
+	<![CDATA[	
+		update m_customer_authenticate set AuthenticateStatus =#authenticateStatus# 
+		where CustomerID = #customerId#
+	]]>
+	</update>
+	--> 
+	
+    <!--更新状态--> 
+    <parameterMap id="ParameterMap" class="map">  
+       <parameter property="pcustomerId" jdbcType="bigint" javaType="java.lang.Integer" mode="IN"/>
+       <parameter property="pcustomerstatus" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+       <parameter property="pauthtype" jdbcType="varchar" javaType="java.lang.String" mode="IN"/>
+       <parameter property="pauthstatus" jdbcType="int" javaType="java.lang.Integer" mode="IN"/>
+	   <parameter property="returnCode" jdbcType="int" javaType="java.lang.Integer" mode="OUT"/>
+    </parameterMap>  
+    <procedure id="call_update_status" parameterMap="ParameterMap">  
+        {call sp_update_status(?,?,?,?,?)}
+    </procedure>  
+     
+	
+</sqlMap>
