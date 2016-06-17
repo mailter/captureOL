@@ -37,10 +37,6 @@ public class ZhixinOl{
 	
 	public HttpClientImp httpclientHandl;
 
-	public HttpClientImp getHttpclientHandl() {
-		return httpclientHandl;
-	}
-
 	public void setHttpclientHandl(HttpClientImp httpclientHandl) {
 		this.httpclientHandl = httpclientHandl;
 	}
@@ -127,10 +123,12 @@ public class ZhixinOl{
 		String url="http://zhixing.court.gov.cn/search/security/jcaptcha.jpg?"+idx;
 		while (!flag){
 			code =httpclientHandl.gethtmlByGet("UTF-8",url, refer,host,proxy,port,cookie,"1");
-			if (!util.isNumeric(code.split("@")[0])){
-				continue;
-			}else{
-				flag=true;
+			if (!"".equals(code) && code != null){
+				if (!util.isNumeric(code.split("@")[0])){
+					continue;
+				}else{
+					flag=true;
+				}
 			}
 		}
 		return code;
@@ -286,7 +284,7 @@ public class ZhixinOl{
 			
 //		public static void main(String[] args) throws Exception {
 //			ZhixinOl factory = new ZhixinOl();
-//			factory.getZhixin("谭波","");
+//			factory.getZhixin("周树人","");
 //		}
 	
 }

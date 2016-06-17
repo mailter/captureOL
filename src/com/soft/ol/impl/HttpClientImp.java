@@ -297,12 +297,12 @@ public class HttpClientImp implements IHttpClient{
 		WebClient webClient = new WebClient(bv);
 		//WebClient webClient = new WebClient(bv, "101.226.249.237", 80);
 		webClient.getCookieManager().setCookiesEnabled(true);//开启cookie管理
-		webClient.getOptions().setJavaScriptEnabled(true);
+		webClient.getOptions().setJavaScriptEnabled(false);
 		webClient.getOptions().setCssEnabled(false);
 		webClient.getOptions().setRedirectEnabled(true);
-		//webClient.setAjaxController(new NicelyResynchronizingAjaxController());
+		webClient.setAjaxController(new NicelyResynchronizingAjaxController());
 		webClient.getOptions().setTimeout(40000);
-		webClient.waitForBackgroundJavaScript(10000);
+		webClient.waitForBackgroundJavaScript(30000);
 		webClient.getOptions().setThrowExceptionOnScriptError(false);
 		HtmlPage page = null;
 		try {

@@ -22,17 +22,18 @@
 			from m_customer c, m_customer_certificate ce
 			where c.CustomerID = ce.CustomerID
 			and ce.CertificateType="ID"
-			and c.CustomerStatus ='PENDINZX'
+			and c.CustomerStatus like 'PENDIN%'
 	]]>
 	</select>
-	 <!--
-	<update id="updateForCustomer"  parameterClass="CustomerObj" >
+	
+	
+	<update id="updateForCustomerStatus"  parameterClass="CustomerObj" >
 	<![CDATA[
-		update m_customer set  CustomerStatus =#customerStatus# 
+		update m_customer set  CustomerStatus =#customerStatus#,LastUpdateTime=now()
 		where CustomerID = #customerId#
 	]]>
 	</update>
-	
+	 <!--
 	<update id="updateForAuthenticate"  parameterClass="CustomerObj" >
 	<![CDATA[	
 		update m_customer_authenticate set AuthenticateStatus =#authenticateStatus# 

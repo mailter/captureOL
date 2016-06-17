@@ -35,7 +35,6 @@ import org.apache.log4j.Logger;
 
 import com.soft.qh.bean.Message;
 import com.sun.jndi.cosnaming.IiopUrl.Address;
-import com.soft.ol.action.CompanyAction;
 import com.soft.ol.service.QhEntityService;
 /**
  * 前海接口实现
@@ -44,7 +43,7 @@ import com.soft.ol.service.QhEntityService;
  */
 public class QhService implements IQhService{
 	
-	private static Logger log = (Logger) LogManager.getLogger(CompanyAction.class);
+	private static Logger log = (Logger) LogManager.getLogger(QhService.class);
 	
 	private HttpConnect httpConnect = new HttpConnect();	//接口用户信息
 	
@@ -182,6 +181,10 @@ public class QhService implements IQhService{
 	 */
 	public Message getResMessage(MessageHead messageHead,MessageBody messageBody,Class clazz,String service) throws Exception{
 		messageHead.setOrgCode(userInfo.getOrgCode());
+		messageHead.setChnlId(userInfo.getChnlId());
+		messageHead.setAuthCode(userInfo.getAuthCode());
+		log.info("head:"+JSONUtils.toJSONStringExpNull(messageHead));
+		log.info("body:"+JSONUtils.toJSONString(messageBody));
 		String reqMessage = createReqMsg(messageHead, messageBody); 
 		String res = sendMessage(serviceHost+service, reqMessage);
 		if(!"".equals(res)){
@@ -208,6 +211,7 @@ public class QhService implements IQhService{
 	 * @author lujf
 	 * @param messageHead
 	 * @param messageBody
+	 * @param customerId 客户id
 	 * @date 2016年06月02日
 	 */
 	public Message goodReliabilityService(MessageHead messageHead,MessageBody messageBody,String customerId){
@@ -230,6 +234,7 @@ public class QhService implements IQhService{
 	 * @author lujf
 	 * @param messageHead
 	 * @param messageBody
+	 * @param customerId 客户id
 	 * @date 2016年06月02日
 	 */
 	public Message addressService(MessageHead messageHead,MessageBody messageBody,String customerId){
@@ -250,6 +255,7 @@ public class QhService implements IQhService{
 	 * @author lujf
 	 * @param messageHead
 	 * @param messageBody
+	 * @param customerId 客户id
 	 * @date 2016年06月02日
 	 * @return
 	 */
@@ -272,6 +278,7 @@ public class QhService implements IQhService{
 	 * @author lujf
 	 * @param messageHead
 	 * @param messageBody
+	 * @param customerId 客户id
 	 * @date 2016年06月02日
 	 * @return
 	 */
@@ -296,6 +303,7 @@ public class QhService implements IQhService{
 	 * @author lujf
 	 * @param messageHead
 	 * @param messageBody
+	 * @param customerId 客户id
 	 * @date 2016年06月02日
 	 * @return
 	 */
@@ -315,8 +323,7 @@ public class QhService implements IQhService{
 	 * @author lujf
 	 * @param messageHead
 	 * @param messageBody
-	 * @param securityInfo
-
+	 * @param customerId 客户id
 	 * @date 2016年06月02日
 	 * @return
 	 */
@@ -336,6 +343,7 @@ public class QhService implements IQhService{
 	 * 好信欺诈数据接口
 	 * @param messageHead
 	 * @param messageBody
+	 * @param customerId 客户id
 	 * @return
 	 */
 	public Message cheatService(MessageHead messageHead,MessageBody messageBody,String customerId){
@@ -353,6 +361,7 @@ public class QhService implements IQhService{
 	 * 银行卡评分接口
 	 * @param messageHead
 	 * @param messageBody
+	 * @param customerId 客户id
 	 * @return
 	 */
 	public Message bankCardScoreService(MessageHead messageHead,MessageBody messageBody,String customerId){

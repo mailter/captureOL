@@ -1,7 +1,12 @@
 package com.soft.ol.action;
 
+import java.io.IOException;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.struts2.ServletActionContext;
 
 import com.opensymphony.xwork2.ActionSupport;
 import com.soft.jxl.service.JlxServiceImp;
@@ -34,15 +39,37 @@ public class CompanyAction extends ActionSupport {
 		this.qhService = qhService;
 	}
 
-
-	public String areaCode;
-	public String companyName;
 	public String idNo;
 	public String name;
-	public String resonCd;
 	public String mobileNo;
+	//前海
+	public String resonCd;
 	public String remoteIP;
 	public String cardCode;
+	public String edu;
+	public String company;
+	//聚信力接口
+	public String password;
+	public String token;
+	public String website;
+	public String captcha;
+
+
+	public String getCompany() {
+		return company;
+	}
+
+	public void setCompany(String company) {
+		this.company = company;
+	}
+
+	public String getEdu() {
+		return edu;
+	}
+
+	public void setEdu(String edu) {
+		this.edu = edu;
+	}
 
 	public String getCardCode() {
 		return cardCode;
@@ -91,80 +118,49 @@ public class CompanyAction extends ActionSupport {
 	public void setMobileNo(String mobileNo) {
 		this.mobileNo = mobileNo;
 	}
-
-	public String getAreaCode() {
-		return areaCode;
-	}
-
-	public void setAreaCode(String areaCode) {
-		this.areaCode = areaCode;
-	}
-
-	public String getCompanyName() {
-		return companyName;
-	}
-
-	public void setCompanyName(String companyName) {
-		this.companyName = companyName;
-	}
-
-//	public void findCourtByName(){
-//		log.info("=========interface===findCourtByName====start=======");
-//		System.out.println("=========interface===findCourtByName====start=======");
-//		System.out.println(areaCode);
-//		System.out.println(companyName);
-//		//spideService.courtThread(areaCode,companyName);
-//		spideService.courtThread("330000","义乌市金联饰品加工厂");
-//		
-//		System.out.println("=========interface====findCourtByName===end=======");
-//		log.info("=========interface====findCourtByName===end=======");
-//	}
-//	
-//	public void findBrandByName(){
-//		log.info("=========interface====findBrandByName===start=======");
-//		System.out.println("=========interface===findBrandByName====start=======");
-//		System.out.println(areaCode);
-//		System.out.println(companyName);
-//		brandService.captureBrand(companyName);
-//		System.out.println("=========interface=====findBrandByName==end=======");
-//		log.info("=========interface====findBrandByName===end=======");
-//	}
 	
-//	public void lendCoustomerService(){
-//		MessageHead messageHead = new MessageHead();
-//		messageHead.setChnlId("qhcs-dcs");//固定
-//		messageHead.setTransNo("6688998"+(i++));//自增
-//		messageHead.setTransDate("2015-02-02 14:12:14");
-//		messageHead.setAuthCode("CRT001A2");//固定
-//		messageHead.setAuthDate("2015-12-02 14:12:14");
-//		
-//		MessageBody messageBody = new MessageBody();
-//		
-//		messageBody.setBatchNo("33adfsf323233");
-//		
-//		//好信常贷客
-//		LendCoustomerReqBodyMsg lendCoustomerReqBodyMsg = new LendCoustomerReqBodyMsg();
-//		lendCoustomerReqBodyMsg.setIdNo("410329197511045073");
-//		lendCoustomerReqBodyMsg.setIdType("0");
-//		lendCoustomerReqBodyMsg.setName("张三");
-//		lendCoustomerReqBodyMsg.setEntityAuthCode("123qwe2122");
-//		lendCoustomerReqBodyMsg.setEntityAuthDate("2015-12-11 12:22:23");
-//		lendCoustomerReqBodyMsg.setSeqNo("120000");
-//		List records = new ArrayList();
-//		records.add(lendCoustomerReqBodyMsg);
-//		messageBody.setRecords(records);
-//		Message res = qhService.lendCoustomerService(messageHead, messageBody);	
-//		System.out.println(JSONUtils.toJSONString(res.getMessageBody()));
-//	}
+
 	/**
 	 * 聚信力接口
 	 * @param
 	 * @return
 	 */
 	public void executeJxl(){
-		jxlService.accessReportData(name,idNo,mobileNo);
-		//jxlService.accessReportData("蔡杭军","339011197809199014","18806756337");
+		try {
+		log.info("=========interface===executeJxl====start=======");
+		HttpServletResponse response = ServletActionContext.getResponse();
+		response.setCharacterEncoding("UTF-8");
+		String strJson =jxlService.submitCapture(name, idNo, mobileNo, password, token, website, captcha);
+		log.info("=========strJson:======="+strJson);	
+		response.getWriter().write(strJson);		
+		log.info("=========interface===executeJxl====end=======");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			log.error(e.getMessage());
+		}
 	}
+	
+	
+	/**
+	 * 重置密码
+	 * @param
+	 * @return
+	 */
+	public void resetPassword(){
+		
+		log.info("=========interface===resetPassword====start=======");
+		try {
+			HttpServletResponse response = ServletActionContext.getResponse();
+			response.setCharacterEncoding("UTF-8");
+			String result = jxlService.resetPassword(token,name,idNo,mobileNo,password,captcha,website,null,null,null);
+			response.getWriter().write(result);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			log.error(e.getMessage());
+		}
+		log.info("=========interface===resetPassword====end=======");
+	}
+	
 	
 	/**
 	 * 失信执行信息
@@ -173,10 +169,25 @@ public class CompanyAction extends ActionSupport {
 	 */
 	public void executeAuth(){
 		
-		//"王海军","4129251975"
-		//authenticService.executeAuthenticateResult("","叶军","01","18806756337","",);
-		authenticService.executeAuthenticateResult(idNo,name,resonCd,mobileNo,remoteIP,cardCode);
+		log.info("=========interface===executeAuth====start=======");
+		authenticService.executeAuthenticateResult(idNo,name,resonCd,mobileNo,remoteIP,cardCode,company,edu);
+		log.info("=========interface===executeAuth====end=======");
 	}
+
 	
-	
+//	/**
+//	 * 接口调试方法
+//	 * @param
+//	 * @return
+//	 */
+//	public void executeBank(){
+//		
+//		//"王海军","4129251975"
+//	
+//		log.info("=========interface===executeAuth====start=======");
+//		authenticService.callQianHaiCreditCard(idNo,name,cardCode,resonCd,mobileNo);
+//		
+//		log.info("=========interface===executeAuth====end=======");
+//	}
+//	
 }

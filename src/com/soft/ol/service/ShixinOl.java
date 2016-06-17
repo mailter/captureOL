@@ -36,10 +36,6 @@ public class ShixinOl{
 	
 	public HttpClientImp httpclientHandl;
 
-	public HttpClientImp getHttpclientHandl() {
-		return httpclientHandl;
-	}
-
 	public void setHttpclientHandl(HttpClientImp httpclientHandl) {
 		this.httpclientHandl = httpclientHandl;
 	}
@@ -79,6 +75,7 @@ public class ShixinOl{
 			//有失信
 		if (list!=null && list.size()>0){
 			strFlag="失信";
+			System.out.println(strFlag);
 		}
 		return strFlag;
 	}
@@ -107,12 +104,15 @@ public class ShixinOl{
 
 		while (!flag){
 			code =httpclientHandl.gethtmlByGet("UTF-8",url, refer,host,proxy,port,cookie,"1");
-			if (!util.isNumeric(code.split("@")[0])){
-				continue;
-			}else{
-				code=code.split("@")[0];
-				flag=true;
+			if (!"".equals(code) && code != null){
+				if (!util.isNumeric(code.split("@")[0])){
+					continue;
+				}else{
+					code=code.split("@")[0];
+					flag=true;
+				}
 			}
+
 		}		
 		return code;
 	}
@@ -274,9 +274,9 @@ public class ShixinOl{
 //		   }
 //		
 		
-		public static void main(String[] args) throws Exception {
-			ShixinOl factory = new ShixinOl();
-			factory.getShixin("王海军","4129251975");
-		}
+//		public static void main(String[] args) throws Exception {
+//			ShixinOl factory = new ShixinOl();
+//			factory.getShixin("周树人","339011197809199014");
+//		}
 	
 }

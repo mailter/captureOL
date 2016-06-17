@@ -9,6 +9,8 @@ public class UserInfo {
 	private String authCode;
 	//密码
 	private String userPassword;
+	//渠道、系统ID
+	private String chnlId;
 
 	public String getOrgCode() {
 		return orgCode;
@@ -41,6 +43,16 @@ public class UserInfo {
 	public void setUserPassword(String userPassword) {
 		this.userPassword = userPassword;
 	}
+
+	public String getChnlId() {
+		return chnlId;
+	}
+
+	public void setChnlId(String chnlId) {
+		this.chnlId = chnlId;
+	}
+	
+	
 	
 	
 }

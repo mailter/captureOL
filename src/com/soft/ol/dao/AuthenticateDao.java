@@ -10,6 +10,6 @@ public interface AuthenticateDao {
 
 	public void callBlackProcedue(Customer obj);
 	public ArrayList<Customer> queryForCustomer();
-	public int querySequence();
+	public int updateForCustomerStatus(Customer obj);
 
 }

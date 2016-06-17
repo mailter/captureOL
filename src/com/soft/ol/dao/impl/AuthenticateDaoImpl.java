@@ -53,14 +53,12 @@ public class AuthenticateDaoImpl extends SqlMapClientDaoSupport implements Authe
 		 return list;
 	}
 	
-	@Override
-	public int querySequence() {
-		// TODO Auto-generated method stub
-		 int  sequence = Integer.parseInt((String) getSqlMapClientTemplate().queryForObject("querySequence"));
-		 return sequence;
+	
+	public int updateForCustomerStatus(Customer obj) {
+	// TODO Auto-generated method stub
+		int total = getSqlMapClientTemplate().update("updateForCustomerStatus",obj); 
+		return total;
 	}
 
-	
 
-	
 }

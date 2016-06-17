@@ -8,7 +8,8 @@ xsi:schemaLocation="http://www.springframework.org/schema/beans
                     http://www.springframework.org/schema/tx 
                     http://www.springframework.org/schema/tx/spring-tx.xsd 
                     http://www.springframework.org/schema/aop 
-                    http://www.springframework.org/schema/aop/spring-aop.xsd" default-autowire="byName">
+                    http://www.springframework.org/schema/aop/spring-aop.xsd"
+                    default-autowire="byName">
 
 	<!-- 实体HTTP类  -->
 	<bean id="Httpclient" class="com.soft.ol.impl.HttpClientImp"/>
@@ -93,8 +94,11 @@ xsi:schemaLocation="http://www.springframework.org/schema/beans
 			<ref bean="authenDaoHandl"/>
 		</property>
 		<!--评分基数-->
-		<property name="credooScore" value="550"/>
+		<property name="credooScore" value="300"/>
 		<property name="rskScore" value="60"/>
+		<!--鉴通接口验证子项目
+		<property name="authsubProduct" value="0000000101001101"/>-->
+		
 	</bean>
 	
 	<bean id="jxlEntityService" class="com.soft.ol.service.JxlEntityService">
@@ -129,12 +133,21 @@ xsi:schemaLocation="http://www.springframework.org/schema/beans
 	
 	<!-- 前海接口 -->
 	<bean id="qhUserInfo" class="com.soft.qh.bean.UserInfo">
+		<property name="orgCode" value="91330104MA27XMEQ91"/>
+		<property name="userName" value="pinxingOper" />
+		<property name="authCode"  value="OTH1233XX"/>
+		<property name="userPassword" value="t_A91260"/>
+		<property name="chnlId" value="pinxingsj"></property>
+	   <!-- 测试 
 		<property name="orgCode" value="10000000"/>
 		<property name="userName" value="V_PA025_QHCS_DCS" />
 		<property name="authCode"  value="CRT001A2"/>
 		<property name="userPassword" value="weblogic1"/>
+		<property name="chnlId" value="qhcs-dcs"></property>
+		-->
 	</bean>
-	
+
+		<!-- HTTPCLIENT -->
 	<bean id="clientConn" class="com.soft.http.HttpConnect" />
 	
 	<bean id="qhService" class="com.soft.qh.service.QhService">
@@ -149,16 +162,28 @@ xsi:schemaLocation="http://www.springframework.org/schema/beans
 		<property name="qhEntityService">
 			<ref bean="qhEntityService"/>
 		</property>
+		<!-- 正式 -->
+		<property name="serviceHost" value="https://qhzx-dcs.pingan.com.cn/"/>
+		<property name="keyStr" value="fnHvb_SPEIDMJt1Lj1eo1dxi"/>
+		<property name="transformation" value="DESede/ECB/PKCS5Padding"/>
+		<property name="keyStorePath" value="C:\certificate\px_store.jks"/>
+		<property name="certificatePath" value="C:\certificate\credoo.cer"/>
+		<property name="alias" value="pxSj"/>
+		<property name="password" value="pxsj_91330104"/>
+		<property name="algorithm" value="SHA1WithRSA"/>
 		
+		<!-- 测试  
 		<property name="serviceHost" value="https://test-qhzx.pingan.com.cn:5443/"/>
 		<property name="keyStr" value="SK803@!QLF-D25WEDA5E52DA"/>
 		<property name="transformation" value="DESede/ECB/PKCS5Padding"/>
-		<property name="keyStorePath" value="C:\certificate\credoo_stg.jks"/>
-		<property name="certificatePath" value="C:\certificate\credoo_stg.cer"/>
+		<property name="keyStorePath" value="D:\credoo_stg.jks"/>
+		<property name="certificatePath" value="D:\credoo_stg.cer"/>
 		<property name="alias" value="signKey"/>
 		<property name="password" value="qhzx_stg"/>
 		<property name="algorithm" value="SHA1WithRSA"/>
+		-->
 	</bean>
+
 	
 	<bean id="jlxServiceImp" class="com.soft.jxl.service.JlxServiceImp">
 		<property name="orgName"  value="pinxing"/>
@@ -171,6 +196,38 @@ xsi:schemaLocation="http://www.springframework.org/schema/beans
 		
 		<property name="jxlEntityService">
 			<ref bean="jxlEntityService"/>
+		</property>
+	</bean>
+	
+	
+	<bean id="accessReportDataTask" class="com.soft.jxl.task.AccessReportDataTask">
+		<property name="jlxService">
+			<ref bean="jlxServiceImp" />
+		</property>
+	</bean>
+
+	<bean id="scheduledzhixinJobDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="accessReportDataTask" />
+		</property>
+		<property name="targetMethod">
+			<value>runTask</value>
+		</property>
+	</bean>
+
+	<bean id="simpleTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+		<property name="jobDetail" ref="scheduledzhixinJobDetail" />
+		<property name="startDelay" value="0" /><!-- 调度工厂实例化后，经过0秒开始执行调度 -->
+		<property name="repeatInterval" value="2000" /><!-- 每2秒调度一次 -->
+		<property name="repeatCount" value="0" /><!-- 每2秒调度一次 -->
+	</bean>
+
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean" autowire="no">
+		<property name="triggers">
+			<list>
+				<ref bean="simpleTrigger" />
+			</list>
 		</property>
 	</bean>
 	

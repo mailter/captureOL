@@ -1,15 +1,18 @@
 package com.soft.jxl.service;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import org.apache.http.HttpException;
 import org.apache.http.cookie.Cookie;
+import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,32 +20,34 @@ import com.soft.http.HttpConnect;
 import com.soft.http.bean.RequestHead;
 import com.soft.http.bean.TokenStore;
 import com.soft.http.expextion.CaptureException;
-import com.soft.jxl.bean.AppCheck;
+import com.soft.jxl.bean.CustomInfo;
 import com.soft.jxl.bean.DataMapping;
 import com.soft.jxl.bean.SubmitCaptureReq;
+import com.soft.jxl.bean.TaskCache;
 import com.soft.jxl.bean.Token;
-import com.soft.ol.service.JxlEntityService;
 import com.soft.util.JSONUtils;
 import com.soft.util.StringUtil;
+import com.soft.jxl.bean.AppCheck;
+import com.soft.ol.service.JxlEntityService;
 /**
  * 聚信立接口实现类
  * 
  * @author lujf 2016年5月26日
  */
 public class JlxServiceImp implements JlxService {
-
+	
 	protected final Logger log = LoggerFactory.getLogger(this.getClass()
 			.getName());
 
-	private HttpConnect httpConnect;
+	private HttpConnect httpConnect = new HttpConnect();;
 	// 客户名称
-	private String orgName;
+	private String orgName = "pinxing";
 	// 客户标识码
-	private String clientSecret;
+	private String clientSecret = "76f5a521f5104983b5c9b21a57abfdae";
 	// 过期失效时间
-	private String hours;
+	private String hours = "1";
 	// 聚信立接口地址
-	private String jlxInterfaceUri;
+	private String jlxInterfaceUri = "https://www.juxinli.com/";
 	
 	private JxlEntityService jxlEntityService;
 	
@@ -151,6 +156,7 @@ public class JlxServiceImp implements JlxService {
 			if (!"".equals(json)) {
 				if("true".equals(JSONUtils.getStringByKey(json,"success"))){
 					saveAccessReportData(JSONUtils.getStringByKey(json,"report_data"),name,idcard,phone);
+					return json;
 				}else{
 					log.debug(JSONUtils.getStringByKey(json,"note"));
 				}
@@ -235,31 +241,108 @@ public class JlxServiceImp implements JlxService {
 	 * @param phone
 	 * @return
 	 */
-	public String submitCapture(String name,String idCard,String account,String password){
-		String websit = this.getWebSit(name, idCard, account);
-		
-		if(!"true".equals(JSONUtils.getStringByKey(websit,"success"))){
-			return websit;
-		}
+	public String submitCapture(String name,String idCard,String account,String password,String token,String website,String captcha){
 		
 		SubmitCaptureReq submitCaptureReq = new SubmitCaptureReq();
 		submitCaptureReq.setAccount(account);
 		submitCaptureReq.setPassword(password);
-		submitCaptureReq.setType("");
-		
-		String data = JSONUtils.getStringByKey(websit, "data");
-		if(data != null && !"".equals(data)){
-			String token = JSONUtils.getStringByKey(data, "token");
-			String datasource = JSONUtils.getStringByKey(data, "datasource");
-			submitCaptureReq.setToken(token);
-			if(datasource != null && !"".equals(datasource)){	
-				String website = JSONUtils.getStringByKey(datasource, "website");
-				submitCaptureReq.setWebsite(website);
+		if(captcha == null || "".equals(captcha)){
+			//获取短信验证码以及采集信息
+			String websit = this.getWebSit(name, idCard, account);
+			if(!"true".equals(JSONUtils.getStringByKey(websit,"success"))){
+				return websit;
 			}
+			String data = JSONUtils.getStringByKey(websit, "data");
+			String datasource = JSONUtils.getStringByKey(data, "datasource");
+			String web_site = JSONUtils.getStringByKey(datasource, "website");
+			String web_token = JSONUtils.getStringByKey(data, "token");
+			submitCaptureReq.setWebsite(web_site);		
+			submitCaptureReq.setToken(web_token);
+			submitCaptureReq.setType("");
+			submitCaptureReq.setCaptcha("");
 			String rs = this.submitCaptureInfo(submitCaptureReq);
+			if(!"true".equals(JSONUtils.getStringByKey(websit,"success"))){
+				return  rs;
+			}else{
+				submitCaptureReq.setSuccess("true");
+				return JSONUtils.toJSONString(submitCaptureReq);
+			}		
+		}else{
+			//提交采集信息
+			submitCaptureReq.setWebsite(website);
+			submitCaptureReq.setToken(token);
+			submitCaptureReq.setType("SUBMIT_CAPTCHA");
+			submitCaptureReq.setPassword(password);
+			submitCaptureReq.setCaptcha(captcha);
+			String rs = this.submitCaptureInfo(submitCaptureReq);
+			//判断是否成功
+			if("true".equals(JSONUtils.getStringByKey(rs,"success"))){
+				String data = JSONUtils.getStringByKey(rs, "data");
+				//判断是否准备采集
+				if(data != null && "10008".equals(JSONUtils.getStringByKey(data, "process_code"))){
+					//提交采集成功的数据放到获取分析数据队列中
+					TaskCache.customerLst.offer(new CustomInfo(name, idCard, account));
+				}
+			}
 			return rs;
 		}
-		return "";
+	 
+	}
+	
+	
+	
+	/**
+	 * 
+	* @Title: resetPassword 
+	* @Description:重置密码接口
+	* @param
+	* @return String
+	* @author Lujf
+	* @2016年6月16日@上午9:51:17
+	* @throws
+	 */
+	public String resetPassword(String token,String name,String idCard,String account,String password,String captcha,String website,String contact1,String contact2,String contact3){
+		Map<String,String> param = new HashMap<String,String>();
+		param.put("account", account);
+		List<RequestHead> requestHeads = new ArrayList<RequestHead>();
+		requestHeads.add(new RequestHead("Content-Type", "application/json"));
+		if(captcha == null || "".equals(captcha)){
+			String websit = this.getWebSit(name, idCard, account);
+			if(!"true".equals(JSONUtils.getStringByKey(websit,"success"))){
+				return websit;
+			}
+			String data = JSONUtils.getStringByKey(websit, "data");
+			String datasource = JSONUtils.getStringByKey(data, "datasource");
+			String web_site = JSONUtils.getStringByKey(datasource, "website");
+			String web_token = JSONUtils.getStringByKey(data, "token");
+			param.put("type", "");
+			param.put("website", web_site);
+			param.put("token",web_token);
+			param.put("captcha", "");	
+			String json = getJsonFromRpc(jlxInterfaceUri
+					+ this.RESERT_PASSWORD_SERVICE,
+					JSONUtils.toJSONStringExpNull(param), requestHeads);
+			if(!"true".equals(JSONUtils.getStringByKey(websit,"success"))){
+				return  json;
+			}else{
+				param.put("success", "true");
+				return JSONUtils.toJSONString(param);
+			}		
+		}
+		param.put("token",token);
+		param.put("password", password);
+		param.put("captcha", captcha);
+		param.put("website", website);
+		param.put("type", "SUBMIT_RESET_PWD");
+		param.put("contact1", contact1);
+		param.put("contact2", contact2);
+		param.put("contact3", contact3);
+		List<Cookie> cookies = new ArrayList<Cookie>();
+		String rs = getJsonFromRpc(jlxInterfaceUri
+				+ this.RESERT_PASSWORD_SERVICE,
+				JSONUtils.toJSONStringExpNull(param), requestHeads);
+		
+		return rs;
 		
 	}
 	
@@ -418,8 +501,16 @@ public class JlxServiceImp implements JlxService {
 		JlxServiceImp jlxService = new JlxServiceImp();
 //		Token token = jlxService.getToken();
 //		System.out.println(token.getAccessToken());
-//		jlxService.access_raw_data("蔡杭军", "339011197809199014", "18806756337");
-		jlxService.accessReportData("蔡杭军", "339011197809199014", "18806756337");
+		//String str = jlxService.accessReportData("蔡杭军", "339011197809199014", "15558163511");
+		String json = jlxService.resetPassword("","蔡杭军", "339011197809199014", "18806756337", "", "", "", "", "", "");
+		Map<String,String> map = JSONUtils.toBean(json, Map.class);
+//		
+		Scanner sc = new Scanner(System.in);
+		String capture = sc.nextLine();
+//		
+		String res = jlxService.resetPassword(map.get("token"),"蔡杭军","339011197809199014", map.get("account"), "888999", capture, map.get("website"), null, null, null);
+ 		System.out.println(res+"this is result");
+		
 //		jlxService.access_raw_data("蔡振", "339011197809199014", "18806756337");
 	}
 }

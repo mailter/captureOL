@@ -37,6 +37,7 @@ public class AuthenticateService {
 	
 	private static final String SUCCESS_CODE ="E000000";
 	private static final String ERROR_CODE ="E000996";
+	private static final String contEdu ="E000996";
 	
 	private ShixinOl shixinService;
 	private ZhixinOl zhixinService;
@@ -49,7 +50,16 @@ public class AuthenticateService {
 	
 	private int credooScore ;//好信度分值
 	private int rskScore;//好信度欺诈
-	
+//	private String authsubProduct;//鉴通子项目
+//	
+//	public String getAuthsubProduct() {
+//		return authsubProduct;
+//	}
+//
+//	public void setAuthsubProduct(String authsubProduct) {
+//		this.authsubProduct = authsubProduct;
+//	}
+
 	public int getCredooScore() {
 		return credooScore;
 	}
@@ -85,13 +95,16 @@ public class AuthenticateService {
 		this.shixinService = shixinService;
 	}
 
-	public void executeAuthenticateResult(String idNo,String name,String resonCd,String mobileNo,String remoteIP,String cardCode){
+	public void executeAuthenticateResult(String idNo,String name,String resonCd,String mobileNo,String remoteIP,String cardCode,String company,String edu){
 		
 		boolean blnFlag =true;
+		String strStauts ="PENDINZX";
 		
 		ArrayList<Customer> arrayList = new ArrayList<Customer>();
-		
+
 		arrayList=autheticDaoHandl.queryForCustomer();
+		
+		System.out.println("====size========="+arrayList.size());
 		//
 		for (int i =0; i < arrayList.size(); i++){
 			
@@ -116,7 +129,7 @@ public class AuthenticateService {
 				//执行查询
 				String reString = zhixinService.getZhixin(name,idNo);
 				
-				if ("执行".endsWith(reString)){
+				if ("执行".equals(reString)){
 					blnFlag=false;
 				}
 
@@ -125,7 +138,9 @@ public class AuthenticateService {
 					updateStatus(customerId,"OVER", "2","PENDINZX");
 					continue;
 				}else{
+					System.out.println("========PENDINSX====");
 					updateStatus(customerId,"PENDINSX", "1","PENDINSX");
+					strStauts="PENDINSX";
 				}
 				log.info("=====执行查询===== end==");
 				
@@ -133,7 +148,7 @@ public class AuthenticateService {
 				//失信
 				String sxString =shixinService.getShixin(name,idNo);
 				
-				if ("失信".endsWith(sxString)){
+				if ("失信".equals(sxString)){
 					blnFlag=false;
 				}
 				System.out.println("========失信查询============"+blnFlag);
@@ -141,59 +156,64 @@ public class AuthenticateService {
 					updateStatus(customerId,"OVER", "2","PENDINSX");
 					continue;
 				}else{
+					System.out.println("========PENDINQH====");
 					updateStatus(customerId,"PENDINQH", "1","PENDINQH");
+					strStauts="PENDINQH";
 				}
 				log.info("=====失信查询=====end==");
 			}
 
-			
 			if (blnFlag){
-				//前海接口
+//				//前海接口
 				//风险度提示interface
-				//if (!callQianHaiRisk("440102198301114447","米么联调","01")){
 				log.info("=====风险度提示=====start==");
-				if (!callQianHaiRisk(idNo,name,resonCd)){
-					updateStatus(customerId,"OVER","2","PENDINQH_RISK");
-					continue;
+				if ("PENDINQH".equals(strStauts) || "PENDINQH_RISK".equals(customerStatus.trim())){
+					if (!callQianHaiRisk(idNo,name,resonCd)){
+						continue;
+					}
 				}
 				log.info("=====风险度提示=====end==");
 				//好信度
-				//if (!callQianHaiCredit("211403198704148220","张小","01","13266693365")){
 				log.info("=====好信度=====start==");
-				if (!callQianHaiCredit(idNo,name,resonCd,mobileNo,cardCode)){
-					updateStatus(customerId,"OVER","2","PENDINQH_CREDIT");
-					continue;
+				if ("PENDINQH".equals(strStauts) || "PENDINQH_CREDIT".equals(customerStatus.trim())){
+					if (!callQianHaiCredit(idNo,name,resonCd,mobileNo,cardCode)){
+						continue;
+					}
 				}
 				log.info("=====好信度=====end==");
 				//好信度欺诈
-				//if (!callQianHaiFake("211403198704148220","张小","01","13266693365")){
 				log.info("=====好信度欺诈=====start==");
-				if (!callQianHaiFake(idNo,name,resonCd,mobileNo,remoteIP)){
-					updateStatus(customerId,"OVER","2","PENDINQH_CHEAT");
-					continue;
+				if ("PENDINQH".equals(strStauts) || "PENDINQH_CHEAT".equals(customerStatus.trim())){
+					if (!callQianHaiFake(idNo,name,resonCd,mobileNo,remoteIP)){
+						continue;
+					}
 				}
 				log.info("=====好信度欺诈=====end==");
-				//鉴通
-				log.info("=====鉴通=====start==");
-				if (!callQianHaiAuthen(idNo,name,resonCd,mobileNo)){
-					updateStatus(customerId,"OVER","2","PENDINQH_AUTHEN");
-					continue;
-				}
-				log.info("=====鉴通=====end==");
+//				//鉴通
+//				log.info("=====鉴通=====start==");
+//				if ("PENDINQH".equals(strStauts) || "PENDINQH_AUTHEN".equals(customerStatus.trim())){
+//					if (!callQianHaiAuthen(idNo,name,resonCd,mobileNo,company,edu)){
+//						continue;
+//					}
+//				}
+//				log.info("=====鉴通=====end==");
 				//常贷客
-				//if (!callQianHaiLender("410329197511045073","张三")){
 				log.info("=====常贷客=====start==");
-				if (!callQianHaiLender(idNo,name)){
-					updateStatus(customerId,"OVER","2","PENDINQH_LENDER");
-					continue;
+				if ("PENDINQH".equals(strStauts) || "PENDINQH_LEND".equals(customerStatus.trim())){
+					if (!callQianHaiLender(idNo,name)){
+						continue;
+					}
 				}
 				log.info("=====常贷客=====end==");
+				
+				log.info("=====银行卡评分=====start==");
 				//银行卡评分
-				if (!callQianHaiCreditCard(idNo,name,cardCode,resonCd,mobileNo)){
-					updateStatus(customerId,"OVER","2","PENDINQH_CREDITCARD");
-					continue;
+				if ("PENDINQH".equals(strStauts) || "PENDINQH_CREDITCARD".equals(customerStatus.trim())){
+					if (!callQianHaiCreditCard(idNo,name,cardCode,resonCd,mobileNo)){
+						continue;
+					}
 				}
-
+				log.info("=====银行卡评分=====end==");
 				//执行结束
 				updateStatus(customerId,"OVER", "1","ALL");
 			}
@@ -210,11 +230,26 @@ public class AuthenticateService {
 	private void updateStatus(String customerId,String custatus,String authStatus,String authType){
 		
 		Customer customer= new Customer();
+		
 		customer.setCustomerId(customerId);
 		customer.setCustomerStatus(custatus);
 		customer.setAuthtype(authType);
 		customer.setAuthenticateStatus(authStatus);
-		autheticDaoHandl.callBlackProcedue(customer);
+		
+		System.out.println(customer.getCustomerId());
+		System.out.println(customer.getCustomerStatus());
+		System.out.println(customer.getAuthtype());
+		System.out.println(customer.getAuthenticateStatus());
+		
+		log.info("=====改变状态====start==="+customer.getCustomerStatus());
+		if (!"OVER".equals(custatus)){
+			autheticDaoHandl.updateForCustomerStatus(customer);
+		}else{
+			
+			autheticDaoHandl.callBlackProcedue(customer);
+			log.info("=====成功===");
+		}
+		log.info("=====改变状态====end==="+customer.getCustomerStatus());
 	}
 	
 	 /**
@@ -233,17 +268,16 @@ public class AuthenticateService {
 		boolean flag =true;
 		//autheticDaoHandl.
 		MessageHead messageHead = new MessageHead();
-		messageHead.setChnlId("qhcs-dcs");//固定
+		//messageHead.setChnlId("qhcs-dcs");//固定
 		//messageHead.setTransNo(transNo);//自增
 		messageHead.setTransNo(transNo);//自增
 		//messageHead.setTransDate(tranDate);
 		messageHead.setTransDate(tranDate);
-		messageHead.setAuthCode("CRT001A2");//固定
+		//messageHead.setAuthCode("CRT001A2");//固定
 		messageHead.setAuthDate(util.getSysDate("yyyy-MM-dd"));
 		
 		MessageBody messageBody= new MessageBody();
 		messageBody.setBatchNo(getBathNo());
-		//好信常贷客
 		RiskDegreeReqBodyMsg RiskReqBodyMsg = new RiskDegreeReqBodyMsg();
 		RiskReqBodyMsg.setIdNo(idNo);
 		//RiskReqBodyMsg.setIdNo("410329197511045073");
@@ -258,28 +292,42 @@ public class AuthenticateService {
 		records.add(RiskReqBodyMsg);
 		messageBody.setRecords(records);
 		Message res = qhService.riskDegreeService(messageHead, messageBody,customerId);
-		String transCode = res.getMessageHead().getRtCode();
+
 		ArrayList<Record> list = new ArrayList<Record>();
 		list=(ArrayList<Record>) res.getMessageBody().getRecords();
 		RiskDegreeResBodyMsg riskRes =null;
 		String errCode ="";
 		if (res != null){
+			String transCode = res.getMessageHead().getRtCode();
 			for (int i =0;i<list.size(); i++){
 				riskRes =(RiskDegreeResBodyMsg)list.get(i);
 				errCode=riskRes.getErCode();
 			}
 			
-			if (transCode.equals("E000000")){
-				if (errCode.equals("E000000")){
+			if (SUCCESS_CODE.equals(transCode)){
+				if (SUCCESS_CODE.equals(errCode)){
 					if (riskRes.getRskMark() != null && !"".equals(riskRes.getRskMark())){
 						if (!riskRes.getRskMark().contains("99")){
+							updateStatus(customerId,"OVER","2","PENDINQH_RISK");
 							flag=false;
 						}
 					}				
 				}	
+			}else{
+				flag =false;
 			}
 		}
-		System.out.println(JSONUtils.toJSONString(res.getMessageBody()));
+		
+		if (!flag){
+			updateStatus(customerId,"OVER","2","PENDINQH_RISK");
+		}else{
+			updateStatus(customerId,"PENDINQH_RISK","1","PENDINQH_RISK");
+		}
+		//updateStatus(customerId,"PENDINQH_RISK","1","PENDINQH_RISK");
+			//flag =false;
+
+//		System.out.println(JSONUtils.toJSONString(res.getMessageBody()));
+//		log.info(JSONUtils.toJSONString(res.getMessageBody()));
 		log.info("=====callQianHaiRisk=====end==");
 		return flag;
 	}
@@ -302,10 +350,10 @@ public class AuthenticateService {
 		String tranDate =util.getSysDate("yyyy-MM-dd HH:mm:ss");
 		//autheticDaoHandl.
 		MessageHead messageHead = new MessageHead();
-		messageHead.setChnlId("qhcs-dcs");//固定
+		//messageHead.setChnlId("qhcs-dcs");//固定
 		messageHead.setTransNo(transNo);//自增
 		messageHead.setTransDate(tranDate);
-		messageHead.setAuthCode("CRT001A2");//固定
+		//messageHead.setAuthCode("CRT001A2");//固定
 		messageHead.setAuthDate(tranDate);
 		
 		MessageBody messageBody= new MessageBody();
@@ -327,12 +375,13 @@ public class AuthenticateService {
 		records.add(creditReqBodyMsg);
 		messageBody.setRecords(records);
 		Message res = qhService.goodReliabilityService(messageHead, messageBody,customerId);
-		String transCode = res.getMessageHead().getRtCode();
+
 		ArrayList<Record> list = new ArrayList<Record>();
 		list=(ArrayList<Record>) res.getMessageBody().getRecords();
 		GoodReliabilityResBodyMsg creditRes =null;
 		String errCode ="";
 		if (res != null){
+			String transCode = res.getMessageHead().getRtCode();
 			for (int i =0;i<list.size(); i++){
 				creditRes =(GoodReliabilityResBodyMsg)list.get(i);
 				errCode=creditRes.getErCode();
@@ -344,13 +393,25 @@ public class AuthenticateService {
 							&& !"-1".equals(creditRes.getCredooScore())){
 						String score =creditRes.getCredooScore();
 						if (Integer.parseInt(score) < credooScore ){
+							
 							flag=false;
 						}
 					}				
 				}	
+			}else{
+				flag =false;
 			}
 		}
-		System.out.println(JSONUtils.toJSONString(res.getMessageBody()));
+		
+		if (!flag){
+			updateStatus(customerId,"OVER","2","PENDINQH_CREDIT");
+		}else{
+			updateStatus(customerId,"PENDINQH_CREDIT","1","PENDINQH_CREDIT");
+		}
+		
+		//flag =false;
+//		System.out.println(JSONUtils.toJSONString(res.getMessageBody()));
+//		log.info(JSONUtils.toJSONString(res.getMessageBody()));
 		log.info("=====callQianHaiCredit=====end==");
 		return flag;
 	}
@@ -373,10 +434,10 @@ public class AuthenticateService {
 		String tranDate =util.getSysDate("yyyy-MM-dd HH:mm:ss");
 		//autheticDaoHandl.
 		MessageHead messageHead = new MessageHead();
-		messageHead.setChnlId("qhcs-dcs");//固定
+		//messageHead.setChnlId("qhcs-dcs");//固定
 		messageHead.setTransNo(transNo);//自增
 		messageHead.setTransDate(tranDate);
-		messageHead.setAuthCode("CRT001A2");//固定
+		//messageHead.setAuthCode("CRT001A2");//固定
 		messageHead.setAuthDate(util.getSysDate("yyyy-MM-dd"));
 		
 		MessageBody messageBody= new MessageBody();
@@ -398,30 +459,41 @@ public class AuthenticateService {
 		records.add(cheatReqBodyMsg);
 		messageBody.setRecords(records);
 		Message res = qhService.cheatService(messageHead, messageBody,customerId);
-		String transCode = res.getMessageHead().getRtCode();
 		ArrayList<Record> list = new ArrayList<Record>();
 		list=(ArrayList<Record>) res.getMessageBody().getRecords();
 		CheatResBodyMsg cheatRes =null;
 		String errCode ="";
 		if (res != null){
+			String transCode = res.getMessageHead().getRtCode();
 			for (int i =0;i<list.size(); i++){
 				cheatRes =(CheatResBodyMsg)list.get(i);
 				errCode=cheatRes.getErCode();
 			}
 			
 			if (SUCCESS_CODE.equals(transCode)){
-				if (SUCCESS_CODE.equals(errCode)){
-					if (cheatRes.getRskScore() != null && !"".equals(cheatRes.getRskScore())){
-						String score =cheatRes.getRskScore();
-						if (Integer.parseInt(score) > rskScore){
-							flag=false;
-						}
-					}				
-				}	
+//				if (SUCCESS_CODE.equals(errCode)){
+//					if (cheatRes.getRskScore() != null && !"".equals(cheatRes.getRskScore())){
+//						String score =cheatRes.getRskScore();
+//						if (Integer.parseInt(score) > rskScore){
+//							
+//							flag=false;
+//						}
+//					}				
+//				}	
+			}else{
+				flag =false;
 			}
 		}
 		
-		System.out.println(JSONUtils.toJSONString(res.getMessageBody()));
+		if (!flag){
+			updateStatus(customerId,"OVER","2","PENDINQH_CHEAT");
+		}else{
+			updateStatus(customerId,"PENDINQH_CHEAT","1","PENDINQH_CHEAT");
+		}
+
+			//flag =false;
+//		System.out.println(JSONUtils.toJSONString(res.getMessageBody()));
+//		log.info(JSONUtils.toJSONString(res.getMessageBody()));
 		log.info("=====callQianHaiFake=====end==");
 		return flag;
 	}
@@ -433,24 +505,34 @@ public class AuthenticateService {
      * @param  resonCd
      * @return code
      */
-	private boolean callQianHaiAuthen(String idNo,String name,String resonCd,String mobileNo){
-		
+	private boolean callQianHaiAuthen(String idNo,String name,String resonCd,String mobileNo,String company,String edu){
+
 		log.info("=====callQianHaiAuthen=====Start==");
 		boolean flag =true;
+		String authsubProduct ="0000000101001101";
 		Util util = new Util();
 		String transNo =util.getDate()+getTranNo();
 		String tranDate =util.getSysDate("yyyy-MM-dd HH:mm:ss");
 		//autheticDaoHandl.
 		MessageHead messageHead = new MessageHead();
-		messageHead.setChnlId("qhcs-dcs");//固定
+		//messageHead.setChnlId("qhcs-dcs");//固定
 		messageHead.setTransNo(transNo);//自增
 		messageHead.setTransDate(tranDate);
-		messageHead.setAuthCode("CRT001A2");//固定
+		//messageHead.setAuthCode("CRT001A2");//固定
 		messageHead.setAuthDate(util.getSysDate("yyyy-MM-dd"));
+		
+		if ("".equals(company) || company ==null){
+			authsubProduct ="0000000101001001";
+		}
+		
+		if ("".equals(edu) || edu ==null){
+			authsubProduct ="0000000001001001";
+		}
 		
 		MessageBody messageBody= new MessageBody();
 		messageBody.setBatchNo(getBathNo());
-		messageBody.setSubProductInc("0000000101001001");
+		messageBody.setSubProductInc(authsubProduct);
+		
 		//鉴通
 		AuthenticateReqBodyMsg authReqBodyMsg = new AuthenticateReqBodyMsg();
 	
@@ -464,30 +546,43 @@ public class AuthenticateService {
 		authReqBodyMsg.setEntityAuthCode("123qwe2122");
 		authReqBodyMsg.setEntityAuthDate(util.getSysDate("yyyy-MM-dd"));
 		authReqBodyMsg.setSeqNo(transNo);
+		
+		if (!"".equals(company) && company !=null){
+			authReqBodyMsg.setCompany(company);
+		}
+		
+		if (!"".equals(edu) && edu !=null){
+			authReqBodyMsg.setEductionBckgrd(edu);
+		}
+		
 		List records = new ArrayList();
 		records.add(authReqBodyMsg);
 		messageBody.setRecords(records);
+		
 		Message res = qhService.authenticateService(messageHead, messageBody,customerId);
-		String transCode = res.getMessageHead().getRtCode();
 		ArrayList<Record> list = new ArrayList<Record>();
-		list=(ArrayList<Record>) res.getMessageBody().getRecords();
 		AuthenticateResBodyMsg authResBodyMsg =null;
 		String errCode ="";
 		if (res != null){
+			String transCode = res.getMessageHead().getRtCode();
+			list=(ArrayList<Record>) res.getMessageBody().getRecords();
 			for (int i =0;i<list.size(); i++){
 				authResBodyMsg =(AuthenticateResBodyMsg)list.get(i);
 				errCode=authResBodyMsg.getErrorInfo();
 			}
-			
-			if (SUCCESS_CODE.equals(transCode)){
-				if (SUCCESS_CODE.equals(errCode)){
-					if (authResBodyMsg.getErrorInfo() != null && !"".equals(authResBodyMsg.getErrorInfo())){
-						
-					}				
-				}	
+			System.out.print(transCode);
+			if (!SUCCESS_CODE.equals(transCode)){
+				//updateStatus(customerId,"PENDINQH_AUTHEN","1","PENDINQH_AUTHEN");
+				flag =false;
 			}
+
 		}
-		System.out.println(JSONUtils.toJSONString(res.getMessageBody()));
+		if (!flag){
+			updateStatus(customerId,"OVER","2","PENDINQH_AUTHEN");
+		}else{
+			updateStatus(customerId,"PENDINQH_AUTHEN","1","PENDINQH_AUTHEN");
+		}
+		
 		log.info("=====callQianHaiAuthen=====end==");
 		return flag;
 	}
@@ -510,10 +605,10 @@ public class AuthenticateService {
 		String tranDate =util.getSysDate("yyyy-MM-dd HH:mm:ss");
 
 		MessageHead messageHead = new MessageHead();
-		messageHead.setChnlId("qhcs-dcs");//固定
+		//messageHead.setChnlId("qhcs-dcs");//固定
 		messageHead.setTransNo(transNo);//自增
 		messageHead.setTransDate(tranDate);
-		messageHead.setAuthCode("CRT001A2");//固定
+		//messageHead.setAuthCode("CRT001A2");//固定
 		messageHead.setAuthDate(util.getSysDate("yyyy-MM-dd"));
 		
 		MessageBody messageBody= new MessageBody();
@@ -531,27 +626,30 @@ public class AuthenticateService {
 		records.add(lendReqBodyMsg);
 		messageBody.setRecords(records);
 		Message res = qhService.lendCoustomerService(messageHead, messageBody,customerId);
-		String transCode = res.getMessageHead().getRtCode();
+		
 		ArrayList<Record> list = new ArrayList<Record>();
 		list=(ArrayList<Record>) res.getMessageBody().getRecords();
 		LendCoustomerResBodyMsg lendResBodyMsg =null;
 		String errCode ="";
 		if (res != null){
+			String transCode = res.getMessageHead().getRtCode();
 			for (int i =0;i<list.size(); i++){
 				lendResBodyMsg =(LendCoustomerResBodyMsg)list.get(i);
 				errCode=lendResBodyMsg.getErCode();
 			}
 			
-//			if (SUCCESS_CODE.equals(transCode)){
-//				if (SUCCESS_CODE.equals(errCode)){
-//					if (authResBodyMsg.getErrorInfo() != null && !"".equals(authResBodyMsg.getErrorInfo())){
-//
-//					}				
-//				}	
-//			}
+			if (!SUCCESS_CODE.equals(transCode)){
+				flag =false;
+			}
 		}
-		
-		System.out.println(JSONUtils.toJSONString(res.getMessageBody()));
+		if (!flag){
+			updateStatus(customerId,"OVER","2","PENDINQH_LEND");
+		}else{
+			updateStatus(customerId,"PENDINQH_LEND", "1","PENDINQH_LEND");
+		}
+			//flag =false;
+//		System.out.println(JSONUtils.toJSONString(res.getMessageBody()));
+//		log.info(JSONUtils.toJSONString(res.getMessageBody()));
 		log.info("=====callQianHaiLender=====end==");
 		return flag;
 	}
@@ -565,18 +663,22 @@ public class AuthenticateService {
      * @return code
      */
 	
-	private boolean callQianHaiCreditCard(String idNo,String name,String accountNum,String resonCd,String mobileNo){
+	public boolean callQianHaiCreditCard(String idNo,String name,String accountNum,String resonCd,String mobileNo){
 		
+		if ("".equals(customerId) || customerId == null){
+			customerId="123456";
+		}
+		//customerId="1234566";
 		log.info("=====callQianHaiCreditCard=====Start==");
 		boolean flag =true;
 		Util util = new Util();
 		String transNo =util.getDate()+getTranNo();
 		String tranDate =util.getSysDate("yyyy-MM-dd HH:mm:ss");
 		MessageHead messageHead = new MessageHead();
-		messageHead.setChnlId("qhcs-dcs");//固定
+		//messageHead.setChnlId("qhcs-dcs");//固定
 		messageHead.setTransNo(transNo);//自增
 		messageHead.setTransDate(tranDate);
-		messageHead.setAuthCode("CRT001A2");//固定
+		//messageHead.setAuthCode("CRT001A2");//固定
 		messageHead.setAuthDate(tranDate);
 		
 		MessageBody messageBody= new MessageBody();
@@ -596,17 +698,27 @@ public class AuthenticateService {
 		records.add(bankReqBodyMsg);
 		messageBody.setRecords(records);
 		Message res = qhService.bankCardScoreService(messageHead, messageBody,customerId);
-		String transCode = res.getMessageHead().getRtCode();
+
 		ArrayList<Record> list = new ArrayList<Record>();
-		list=(ArrayList<Record>) res.getMessageBody().getRecords();
+
 		BankCardScoreResBodyMsg bankCardResBodyMsg =null;
 		if (res != null){
-			for (int i =0;i<list.size(); i++){
-				bankCardResBodyMsg =(BankCardScoreResBodyMsg)list.get(i);
-				//errCode=bankCardResBodyMsg.getErCode();
+			String transCode = res.getMessageHead().getRtCode();
+			list=(ArrayList<Record>) res.getMessageBody().getRecords();
+			if (!SUCCESS_CODE.equals(transCode)){
+				flag =false;
 			}
 		}
-		System.out.println(JSONUtils.toJSONString(res.getMessageBody()));
+		
+		if (!flag){
+			updateStatus(customerId,"OVER","2","PENDINQH_CREDITCARD");
+		}else{
+			updateStatus(customerId,"PENDINQH_CREDITCARD","1","PENDINQH_CREDITCARD");
+		}
+
+			//flag =false;
+//		System.out.println(JSONUtils.toJSONString(res.getMessageBody()));
+//		log.info(JSONUtils.toJSONString(res.getMessageBody()));
 		log.info("=====callQianHaiCreditCard=====end==");
 		return flag;
 	}

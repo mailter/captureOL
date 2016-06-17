@@ -22,7 +22,7 @@ public class SpideSiteTimerTask extends TimerTask {
 	  try { 
 		  log.info("-----------executeAuthenticateService-----------------------"); 
 		  System.out.println("====job===start==");
-		  authenticService.executeAuthenticateResult("","","01","","","");
+		  authenticService.executeAuthenticateResult("","","01","","","","","");
 		  System.out.println("====job===end==");
 		  log.info("---------2-------executeAuthenticateService-------------------"); 
 	  } catch (Exception e) { 

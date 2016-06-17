@@ -23,13 +23,15 @@ public interface IQhService {
 	//好信度欺诈接口
 	String CHEAT_SERVICE = "do/dmz/verify/antiFraudDoo/v1/MSC8075";
 	//银行卡评分
-	String BANK_CARD_SCORE_SERVICE = "do/dmz/query/ubzc2m/v1/MSC8012";
+	//String BANK_CARD_SCORE_SERVICE = "do/dmz/query/ubzc2c/v1/MSC8009";
+	String BANK_CARD_SCORE_SERVICE = "do/dmz/query/ubzc2m/v1/MSC8012" ;
 	
 	/**
 	 * 好信度数据数据接口
 	 * @author lujf
 	 * @param messageHead
 	 * @param messageBody
+	 * @param customerId 客户id
 	 * @date 2016年06月02日
 	 */
 	public Message goodReliabilityService(MessageHead messageHead,MessageBody messageBody,String customerId);
@@ -40,6 +42,7 @@ public interface IQhService {
 	 * @author lujf
 	 * @param messageHead
 	 * @param messageBody
+	 * @param customerId 客户id
 	 * @date 2016年06月02日
 	 */
 	public Message addressService(MessageHead messageHead,MessageBody messageBody,String customerId);
@@ -50,6 +53,7 @@ public interface IQhService {
 	 * @author lujf
 	 * @param messageHead
 	 * @param messageBody
+	 * @param customerId 客户id
 	 * @date 2016年06月02日
 	 * @return
 	 */
@@ -62,6 +66,7 @@ public interface IQhService {
 	 * @author lujf
 	 * @param messageHead
 	 * @param messageBody
+	 * @param customerId 客户id
 	 * @date 2016年06月02日
 	 * @return
 	 */
@@ -73,6 +78,7 @@ public interface IQhService {
 	 * @author lujf
 	 * @param messageHead
 	 * @param messageBody
+	 * @param customerId 客户id
 	 * @date 2016年06月02日
 	 * @return
 	 */
@@ -84,6 +90,7 @@ public interface IQhService {
 	 * @author lujf
 	 * @param messageHead
 	 * @param messageBody
+	 * @param customerId 客户id
 	 * @date 2016年06月02日
 	 * @return
 	 */
@@ -93,6 +100,7 @@ public interface IQhService {
 	 * 好信欺诈数据接口
 	 * @param messageHead
 	 * @param messageBody
+	 * @param customerId 客户id
 	 * @return
 	 */
 	public Message cheatService(MessageHead messageHead,MessageBody messageBody,String customerId);
@@ -102,6 +110,7 @@ public interface IQhService {
 	 * 银行卡评分接口
 	 * @param messageHead
 	 * @param messageBody
+	 * @param customerId 客户id
 	 * @return
 	 */
 	public Message bankCardScoreService(MessageHead messageHead,MessageBody messageBody,String customerId);

@@ -15,4 +15,6 @@ public interface JlxService {
 	String SUBMIT_CAPTURE_INFO_SERVICE = "orgApi/rest/v2/messages/collect/req";
 	//提交申请表单获取回执信息
 	String RETURN_WEB_SIT_SERVICE = "orgApi/rest/v2/applications";
+	
+	String RESERT_PASSWORD_SERVICE = "orgApi/rest/v2/messages/reset/req";
 }
